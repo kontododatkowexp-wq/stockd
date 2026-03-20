@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Stockd — Demo v4</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Stockd</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
@@ -23,7 +25,7 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
 .sb-top{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;}
 .sb-bottom{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin-top:auto;}
 .sb-divider{width:32px;height:0.5px;background:#dce6f5;margin:6px auto;}
-.sb-item{width:44px;height:44px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;border:none;background:transparent;}
+.sb-item{width:44px;height:44px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;border:none;background:transparent;position:relative;}
 .sb-item:hover{background:#eef3ff;}
 .sb-item.active{background:#1a6ef5;}
 .sb-label{font-size:8px;color:#6b7a99;text-align:center;line-height:1;}
@@ -38,11 +40,13 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
 .map-area{flex:1;position:relative;overflow:hidden;cursor:grab;}
 .map-area:active{cursor:grabbing;}
 .map-viewport{position:absolute;top:0;left:0;width:800px;height:900px;}
-.map-overlay{position:absolute;bottom:12px;left:8px;right:8px;background:rgba(255,255,255,0.96);border:0.5px solid #dce6f5;border-radius:14px;padding:10px 12px;z-index:10;}
-.nearby-label{font-size:10px;color:#6b7a99;margin-bottom:6px;}
-.nearby-chips{display:flex;gap:6px;overflow-x:auto;}
-.nearby-chip{flex-shrink:0;background:#fff;border:0.5px solid #c8d4e8;border-radius:20px;padding:4px 10px;font-size:10px;color:#0f2a5e;cursor:pointer;white-space:nowrap;}
+.map-overlay{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,0.98);border-top:0.5px solid #dce6f5;border-radius:20px 20px 0 0;padding:0 14px 10px;z-index:10;transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);touch-action:none;}
+.overlay-handle{width:36px;height:4px;background:#c8d4e8;border-radius:2px;margin:8px auto 0;cursor:pointer;}
+.nearby-label{font-size:10px;color:#6b7a99;margin-bottom:8px;}
+.nearby-chips{display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:280px;}
+.nearby-chip{background:#fff;border:0.5px solid #dce6f5;border-radius:10px;padding:8px 10px;font-size:12px;color:#0f2a5e;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
 .nearby-chip:hover{border-color:#1a6ef5;color:#1a6ef5;}
+.nearby-chip-dist{font-size:11px;color:#9baac8;}
 .nav-back{display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7a99;cursor:pointer;padding:8px 16px;background:#f8faff;border-bottom:0.5px solid #dce6f5;flex-shrink:0;}
 .screen-body{flex:1;overflow-y:auto;padding:0 16px 20px;background:#f8faff;}
 .section-title{font-size:15px;font-weight:500;color:#0f2a5e;margin:14px 0 10px;}
@@ -58,6 +62,8 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
 .badge{font-size:10px;padding:3px 7px;border-radius:20px;}
 .badge-blue{background:#eef3ff;color:#1a4ab5;}
 .badge-gray{background:#f2f4f8;color:#6b7a99;border:0.5px solid #dce6f5;}
+.badge-green{background:#e8f5e9;color:#2e7d32;}
+.badge-orange{background:#fff3e0;color:#e65100;}
 .order-label{font-size:10px;font-weight:500;color:#9baac8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
 .qty-btn{width:34px;height:34px;border-radius:9px;border:0.5px solid #c8d4e8;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0f2a5e;}
 .qty-val{font-size:17px;font-weight:500;color:#0f2a5e;min-width:24px;text-align:center;}
@@ -69,7 +75,6 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
 .confirm-icon{width:60px;height:60px;background:#eef3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:20px auto 14px;}
 .receipt-card{background:#f0f5ff;border-radius:14px;padding:14px;margin:16px 0;}
 .receipt-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;}
-.supplier-detail{background:#fff;border:0.5px solid #dce6f5;border-radius:12px;padding:12px;margin-bottom:14px;}
 .sdr{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px 20px;text-align:center;}
 .empty-icon{width:56px;height:56px;background:#eef3ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
@@ -78,21 +83,26 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
 .search-result{background:#fff;border:0.5px solid #dce6f5;border-radius:12px;padding:10px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .search-result:hover{border-color:#1a6ef5;}
 .sr-left{display:flex;align-items:center;gap:10px;}
-.sr-icon{width:34px;height:34px;background:#eef3ff;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sr-icon{width:34px;height:34px;background:#eef3ff;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .map-pin{position:absolute;cursor:pointer;z-index:5;transform:translate(-50%,-50%);}
+.alert-card{background:#fff;border:0.5px solid #dce6f5;border-radius:14px;padding:14px;margin-bottom:10px;}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.supplier-detail-box{background:#fff;border:0.5px solid #dce6f5;border-radius:12px;padding:12px;margin-bottom:14px;}
+.notif-badge{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;border:1.5px solid #fff;}
 </style>
 </head>
 <body>
 <div class="pw">
 <div class="phone">
 
+<!-- HOME -->
 <div class="screen active" id="screen-home">
   <div class="sbar"><span>9:41</span><span style="color:#1a6ef5;">●●●</span></div>
   <div class="top-bar">
     <div class="logo">stockd<span>.</span></div>
     <div class="search-bar" onclick="goTo('screen-search')" style="cursor:pointer;">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#9baac8" stroke-width="1.5"/><path d="M10 10l3 3" stroke="#9baac8" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input placeholder="Search parts, materials..." readonly style="cursor:pointer;pointer-events:none;" />
+      <input placeholder="Search parts, materials..." readonly style="cursor:pointer;pointer-events:none;"/>
     </div>
   </div>
   <div class="home-body">
@@ -117,29 +127,29 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
         <div class="sb-divider"></div>
         <div class="trade-lbl-section">Trades</div>
         <div class="trade-list">
-          <div class="trade-btn active" onclick="goTo('screen-results')">
+          <div class="trade-btn active" id="trade-plumb" onclick="selectTrade('plumbing',this)">
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#1a6ef5" stroke-width="1.4" stroke-linecap="round"/></svg>
             <span class="trade-lbl">Plumb</span>
           </div>
-          <div class="trade-btn" onclick="goTo('screen-results')">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2v4m0 8v4M2 10h4m8 0h4" stroke="#6b7a99" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <div class="trade-btn" id="trade-elec" onclick="selectTrade('electrical',this)">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M11 2L5 11h6l-2 7 6-9h-6l2-7z" stroke="#6b7a99" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="trade-lbl">Elec</span>
           </div>
-          <div class="trade-btn" onclick="goTo('screen-results')">
+          <div class="trade-btn" id="trade-hvac" onclick="selectTrade('hvac',this)">
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 3C7 3 5 5 5 8c0 2 1 3.5 2.5 4.5V15h5v-2.5C14 11.5 15 10 15 8c0-3-2-5-5-5z" stroke="#6b7a99" stroke-width="1.4"/><path d="M8 15h4v1.5a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V15z" stroke="#6b7a99" stroke-width="1.4"/></svg>
             <span class="trade-lbl">HVAC</span>
           </div>
-          <div class="trade-btn" onclick="goTo('screen-results')">
+          <div class="trade-btn" id="trade-gen" onclick="selectTrade('general',this)">
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="14" height="7" rx="1" stroke="#6b7a99" stroke-width="1.4"/><path d="M7 10V7a3 3 0 016 0v3" stroke="#6b7a99" stroke-width="1.4"/></svg>
             <span class="trade-lbl">General</span>
           </div>
         </div>
       </div>
       <div class="sb-bottom">
-        <button class="sb-item" style="position:relative;">
+        <button class="sb-item" onclick="goTo('screen-alerts')">
           <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2a6 6 0 016 6c0 3-1.5 5-1.5 5H5.5S4 11 4 8a6 6 0 016-6z" stroke="#6b7a99" stroke-width="1.4"/><path d="M8 16a2 2 0 004 0" stroke="#6b7a99" stroke-width="1.4"/></svg>
           <span class="sb-label">Alerts</span>
-          <div style="position:absolute;top:6px;right:7px;width:7px;height:7px;background:#e53935;border-radius:50%;border:1.5px solid #fff;"></div>
+          <div class="notif-badge" style="background:#e53935;"></div>
         </button>
         <button class="sb-item">
           <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="#6b7a99" stroke-width="1.4"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#6b7a99" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -172,67 +182,42 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
           <path d="M0 130 Q100 124 200 132 Q300 140 400 128 Q500 118 600 130 Q700 138 800 126" stroke="#fff" stroke-width="3" fill="none" opacity="0.5"/>
           <path d="M0 580 Q120 574 240 582 Q360 590 480 576 Q600 565 720 578 Q760 582 800 576" stroke="#e8e0d0" stroke-width="10" fill="none"/>
           <path d="M170 0 Q164 120 175 180 Q182 260 170 420 Q160 540 168 660 Q175 760 170 900" stroke="#e8e0d0" stroke-width="8" fill="none"/>
-          <path d="M230 0 Q236 150 228 280 Q220 400 232 520 Q240 620 228 900" stroke="#e8e0d0" stroke-width="6" fill="none"/>
           <path d="M450 0 Q458 180 448 300 Q440 420 452 580 Q460 680 450 900" stroke="#e8e0d0" stroke-width="7" fill="none"/>
           <path d="M640 0 Q648 200 638 360 Q630 480 642 660 Q650 760 640 900" stroke="#e8e0d0" stroke-width="6" fill="none"/>
           <ellipse cx="50" cy="720" rx="45" ry="30" fill="#c8dfc8" opacity="0.7"/>
           <ellipse cx="720" cy="80" rx="35" ry="22" fill="#c8dfc8" opacity="0.65"/>
-          <ellipse cx="650" cy="750" rx="30" ry="20" fill="#c8dfc8" opacity="0.6"/>
-          <ellipse cx="380" cy="820" rx="28" ry="18" fill="#c8dfc8" opacity="0.55"/>
           <ellipse cx="25" cy="820" rx="25" ry="35" fill="#b8d4e8" opacity="0.5"/>
           <ellipse cx="750" cy="820" rx="30" ry="22" fill="#b8d4e8" opacity="0.45"/>
           <rect x="10" y="40" width="65" height="40" rx="3" fill="#e0dbd2"/><rect x="12" y="42" width="61" height="36" rx="2" fill="#d8d3ca"/>
-          <rect x="100" y="30" width="55" height="35" rx="3" fill="#e0dbd2"/><rect x="102" y="32" width="51" height="31" rx="2" fill="#d8d3ca"/>
-          <rect x="175" y="40" width="50" height="38" rx="3" fill="#e0dbd2"/>
+          <rect x="100" y="30" width="55" height="35" rx="3" fill="#e0dbd2"/>
           <rect x="350" y="25" width="60" height="42" rx="3" fill="#e0dbd2"/>
           <rect x="600" y="20" width="70" height="45" rx="3" fill="#e0dbd2"/>
           <rect x="10" y="290" width="60" height="38" rx="3" fill="#e0dbd2"/>
-          <rect x="175" y="280" width="55" height="42" rx="3" fill="#e0dbd2"/>
           <rect x="350" y="270" width="65" height="45" rx="3" fill="#e0dbd2"/>
           <rect x="580" y="260" width="70" height="50" rx="3" fill="#e0dbd2"/>
-          <rect x="700" y="275" width="55" height="40" rx="3" fill="#e0dbd2"/>
           <rect x="15" y="510" width="58" height="36" rx="3" fill="#e0dbd2"/>
           <rect x="360" y="495" width="60" height="44" rx="3" fill="#e0dbd2"/>
-          <rect x="590" y="490" width="65" height="45" rx="3" fill="#e0dbd2"/>
           <rect x="20" y="720" width="55" height="35" rx="3" fill="#e0dbd2"/>
-          <rect x="370" y="700" width="58" height="40" rx="3" fill="#e0dbd2"/>
           <circle cx="400" cy="450" r="6" fill="#1a6ef5"/>
           <circle cx="400" cy="450" r="6" fill="none" stroke="#fff" stroke-width="2.5"/>
           <circle cx="400" cy="450" r="22" fill="rgba(26,110,245,0.10)"/>
           <circle cx="400" cy="450" r="38" fill="rgba(26,110,245,0.05)"/>
         </svg>
-        <!-- wrench = plumbing, bolt = electrical, snowflake = hvac, box = general -->
-        <!-- supplier 0: Ferguson - plumbing wrench -->
-        <div class="map-pin" style="left:200px;top:220px;" onclick="selectSupplier(0)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#1a6ef5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Ferguson</div></div></div>
-        <!-- supplier 1: Ramco - plumbing -->
-        <div class="map-pin" style="left:560px;top:330px;" onclick="selectSupplier(1)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#1a6ef5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Ramco</div></div></div>
-        <!-- supplier 2: Metro Pipe - plumbing -->
-        <div class="map-pin" style="left:490px;top:150px;" onclick="selectSupplier(2)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#4a86f0;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Metro Pipe</div></div></div>
-        <!-- supplier 3: City Plumbing - plumbing -->
-        <div class="map-pin" style="left:130px;top:540px;" onclick="selectSupplier(3)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#4a86f0;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">City Plumbing</div></div></div>
-        <!-- supplier 4: Pro Supply - general (box/package icon) -->
-        <div class="map-pin" style="left:650px;top:600px;" onclick="selectSupplier(4)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#4a86f0;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="14" height="7" rx="1" stroke="#fff" stroke-width="1.6"/><path d="M7 10V7a3 3 0 016 0v3" stroke="#fff" stroke-width="1.6"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Pro Supply</div></div></div>
-        <!-- supplier 5: NJ Pipe Works - plumbing -->
-        <div class="map-pin" style="left:330px;top:680px;" onclick="selectSupplier(5)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#6a9af5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">NJ Pipe Works</div></div></div>
-        <!-- supplier 6: Allied Supply - general -->
-        <div class="map-pin" style="left:680px;top:220px;" onclick="selectSupplier(6)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#6a9af5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="14" height="7" rx="1" stroke="#fff" stroke-width="1.6"/><path d="M7 10V7a3 3 0 016 0v3" stroke="#fff" stroke-width="1.6"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Allied Supply</div></div></div>
-        <!-- supplier 7: Tri-State - plumbing -->
-        <div class="map-pin" style="left:90px;top:320px;" onclick="selectSupplier(7)"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:38px;height:38px;border-radius:50%;background:#6a9af5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div><div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">Tri-State Pipe</div></div></div>
+        <div id="map-pins"></div>
       </div>
-      <div class="map-overlay">
-        <div class="nearby-label">8 suppliers nearby · tap pin or chip</div>
-        <div class="nearby-chips">
-          <div class="nearby-chip" onclick="selectSupplier(0)">Ferguson · 0.4mi</div>
-          <div class="nearby-chip" onclick="selectSupplier(1)">Ramco · 1.1mi</div>
-          <div class="nearby-chip" onclick="selectSupplier(2)">Metro · 2.3mi</div>
-          <div class="nearby-chip" onclick="selectSupplier(6)">Allied · 2.8mi</div>
-          <div class="nearby-chip" onclick="selectSupplier(3)">City · 3.1mi</div>
+      <div class="map-overlay" id="map-overlay">
+        <div class="overlay-handle" id="overlay-handle" onclick="toggleOverlay()" style="margin-bottom:6px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="nearby-label" style="margin-bottom:0;" id="map-overlay-label">8 suppliers nearby</div>
+          <div onclick="toggleOverlay()" style="font-size:10px;color:#1a6ef5;cursor:pointer;font-weight:500;" id="overlay-toggle-btn">Show all ↑</div>
         </div>
+        <div class="nearby-chips" id="map-chips" style="display:none;margin-top:8px;"></div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- SEARCH -->
 <div class="screen" id="screen-search">
   <div class="sbar"><span>9:41</span><span style="color:#1a6ef5;">●●●</span></div>
   <div class="top-bar">
@@ -241,66 +226,85 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
     </div>
     <div class="search-bar" style="border-color:#1a6ef5;">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#1a6ef5" stroke-width="1.5"/><path d="M10 10l3 3" stroke="#1a6ef5" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input id="search-input" placeholder="Search parts, materials..." oninput="handleSearch(this.value)" />
+      <input id="search-input" placeholder="Search parts, materials..." oninput="handleSearch(this.value)" autocomplete="off"/>
     </div>
   </div>
   <div class="screen-body" style="padding-top:12px;">
-    <div style="font-size:11px;color:#9baac8;margin-bottom:12px;">Recent searches</div>
-    <div class="search-result" onclick="loadResults('half')">
-      <div class="sr-left">
-        <div class="sr-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#1a6ef5" stroke-width="1.4"/><path d="M4 10h12" stroke="#1a6ef5" stroke-width="1.4"/></svg></div>
-        <div><div style="font-size:13px;color:#0f2a5e;font-weight:500;">1/2" copper pipe</div><div style="font-size:11px;color:#9baac8;">Plumbing</div></div>
+    <div id="search-recents">
+      <div style="font-size:11px;color:#9baac8;margin-bottom:10px;">Recent searches</div>
+      <div class="search-result" onclick="doSearchItem('copper-half')">
+        <div class="sr-left">
+          <div class="sr-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#1a6ef5" stroke-width="1.4"/><path d="M4 10h12" stroke="#1a6ef5" stroke-width="1.4"/></svg></div>
+          <div><div style="font-size:13px;color:#0f2a5e;font-weight:500;">1/2" copper pipe</div><div style="font-size:11px;color:#9baac8;">Plumbing</div></div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div class="search-result" onclick="doSearchItem('wire-12')">
+        <div class="sr-left">
+          <div class="sr-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M11 2L5 11h6l-2 7 6-9h-6l2-7z" stroke="#1a6ef5" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-size:13px;color:#0f2a5e;font-weight:500;">12 AWG wire</div><div style="font-size:11px;color:#9baac8;">Electrical</div></div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
     </div>
-    <div id="search-results-area"></div>
-    <div id="no-results" style="display:none;text-align:center;padding:30px 0;font-size:13px;color:#9baac8;">No results — try "copper pipe"</div>
+    <div id="search-results-area" style="display:none;">
+      <div style="font-size:11px;color:#9baac8;margin-bottom:10px;" id="search-results-label">Results</div>
+      <div id="search-results-list"></div>
+    </div>
+    <div id="no-results" style="display:none;text-align:center;padding:40px 0;">
+      <div style="font-size:32px;margin-bottom:10px;">🔍</div>
+      <div style="font-size:14px;color:#0f2a5e;font-weight:500;">No results found</div>
+      <div style="font-size:12px;color:#9baac8;margin-top:6px;">Try "copper pipe", "wire", or "PVC"</div>
+    </div>
   </div>
 </div>
 
+<!-- RESULTS -->
 <div class="screen" id="screen-results">
   <div class="sbar"><span>9:42</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" onclick="goTo('screen-home')">
+  <div class="nav-back" onclick="goBack()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
     Back
   </div>
   <div class="screen-body" style="padding-top:8px;">
-    <div style="font-size:11px;color:#6b7a99;margin-bottom:2px;" id="results-subtitle">Plumbing · 1/2" copper pipe (10ft)</div>
-    <div class="section-title" style="margin-top:4px;" id="results-title">8 suppliers found</div>
-    <div class="sort-row">
-      <button class="sort-chip active">Nearest</button>
-      <button class="sort-chip">Lowest price</button>
-      <button class="sort-chip">In stock</button>
-      <button class="sort-chip">Fastest pickup</button>
+    <div style="font-size:11px;color:#6b7a99;margin-bottom:2px;" id="results-subtitle"></div>
+    <div class="section-title" style="margin-top:4px;" id="results-title"></div>
+    <div class="sort-row" id="sort-row">
+      <button class="sort-chip active" onclick="sortResults('nearest',this)">Nearest</button>
+      <button class="sort-chip" onclick="sortResults('price',this)">Lowest price</button>
+      <button class="sort-chip" onclick="sortResults('stock',this)">In stock</button>
+      <button class="sort-chip" onclick="sortResults('fastest',this)">Fastest pickup</button>
     </div>
     <div style="margin-top:12px;" id="results-list"></div>
   </div>
 </div>
 
+<!-- SUPPLIER PROFILE -->
 <div class="screen" id="screen-supplier">
   <div class="sbar"><span>9:42</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" id="supplier-back-btn">
+  <div class="nav-back" id="supplier-back-btn" onclick="goBack()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
     Back
   </div>
   <div class="screen-body" style="padding-top:8px;" id="supplier-profile"></div>
 </div>
 
+<!-- ORDER -->
 <div class="screen" id="screen-order">
   <div class="sbar"><span>9:43</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" onclick="goTo('screen-supplier')">
+  <div class="nav-back" onclick="goBack()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
-    Supplier
+    Back
   </div>
   <div class="screen-body" style="padding-top:8px;">
-    <div class="supplier-detail" id="order-detail"></div>
+    <div class="supplier-detail-box" id="order-detail"></div>
     <div style="margin-bottom:16px;">
-      <div class="order-label">Quantity (ft)</div>
+      <div class="order-label" id="qty-label">Quantity</div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <button class="qty-btn" onclick="changeQty(-10)">−</button>
-        <div class="qty-val" id="qty-display">20</div>
-        <button class="qty-btn" onclick="changeQty(10)">+</button>
-        <div style="font-size:12px;color:#6b7a99;margin-left:2px;">ft</div>
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <div class="qty-val" id="qty-display">1</div>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+        <div style="font-size:12px;color:#6b7a99;margin-left:2px;" id="qty-unit-label"></div>
       </div>
     </div>
     <div style="margin-bottom:16px;">
@@ -320,36 +324,75 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
   </div>
 </div>
 
+<!-- CART -->
 <div class="screen" id="screen-cart">
   <div class="sbar"><span>9:43</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" onclick="goTo('screen-home')">
+  <div class="nav-back" onclick="goBack()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
     Back
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;" id="cart-content">
-    <div class="empty-state">
-      <div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h3l1.5 7h7l1.5-5H7" stroke="#1a6ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="17" r="1" fill="#1a6ef5"/><circle cx="15" cy="17" r="1" fill="#1a6ef5"/></svg></div>
-      <div class="empty-title">Your cart is empty</div>
-      <div class="empty-sub">Add items from a supplier<br/>to get started</div>
-    </div>
-  </div>
+  <div style="flex:1;overflow-y:auto;" id="cart-content"></div>
 </div>
 
+<!-- ORDERS -->
 <div class="screen" id="screen-orders">
   <div class="sbar"><span>9:44</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" onclick="goTo('screen-home')">
+  <div class="nav-back" onclick="goBack()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
     Back
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;" id="orders-content">
-    <div class="empty-state">
-      <div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v10a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" stroke="#1a6ef5" stroke-width="1.5"/><path d="M8 4V2h4v2" stroke="#1a6ef5" stroke-width="1.5"/></svg></div>
-      <div class="empty-title">No orders yet</div>
-      <div class="empty-sub">Your placed orders will<br/>appear here</div>
+  <div style="flex:1;display:flex;flex-direction:column;" id="orders-content"></div>
+</div>
+
+<!-- ALERTS -->
+<div class="screen" id="screen-alerts">
+  <div class="sbar"><span>9:44</span><span style="color:#1a6ef5;">●●●</span></div>
+  <div class="nav-back" onclick="goBack()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Back
+  </div>
+  <div class="screen-body" style="padding-top:12px;">
+    <div class="section-title" style="margin-top:0;">Notifications</div>
+    <div class="alert-card">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div class="alert-dot" style="background:#2e7d32;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:#0f2a5e;">Order ready for pickup</div>
+          <div style="font-size:12px;color:#6b7a99;margin-top:2px;">Ferguson Plumbing · Order #SK-0142</div>
+          <div style="font-size:12px;color:#2e7d32;margin-top:4px;font-weight:500;">Your 1/2" copper pipe (20ft) is ready at the counter.</div>
+          <div style="font-size:11px;color:#9baac8;margin-top:6px;">2 min ago</div>
+        </div>
+        <div style="background:#e8f5e9;border-radius:8px;padding:4px 8px;font-size:10px;color:#2e7d32;font-weight:500;white-space:nowrap;">Ready ✓</div>
+      </div>
+    </div>
+    <div class="alert-card">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div class="alert-dot" style="background:#1a6ef5;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:#0f2a5e;">Order confirmed by supplier</div>
+          <div style="font-size:12px;color:#6b7a99;margin-top:2px;">Ramco Supply Co. · Order #SK-0138</div>
+          <div style="font-size:12px;color:#1a6ef5;margin-top:4px;font-weight:500;">3/4" copper pipe (30ft) confirmed. Est. pickup in 15 min.</div>
+          <div style="font-size:11px;color:#9baac8;margin-top:6px;">18 min ago</div>
+        </div>
+        <div style="background:#eef3ff;border-radius:8px;padding:4px 8px;font-size:10px;color:#1a6ef5;font-weight:500;white-space:nowrap;">Confirmed</div>
+      </div>
+    </div>
+    <div class="alert-card" style="opacity:0.65;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div class="alert-dot" style="background:#9baac8;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:#0f2a5e;">Order completed</div>
+          <div style="font-size:12px;color:#6b7a99;margin-top:2px;">City Plumbing · Order #SK-0129</div>
+          <div style="font-size:12px;color:#6b7a99;margin-top:4px;">12 AWG wire (50ft) — picked up successfully. Thanks!</div>
+          <div style="font-size:11px;color:#9baac8;margin-top:6px;">Yesterday at 3:42 PM</div>
+        </div>
+        <div style="background:#f2f4f8;border-radius:8px;padding:4px 8px;font-size:10px;color:#6b7a99;font-weight:500;white-space:nowrap;">Done</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- CONFIRM -->
 <div class="screen" id="screen-confirm">
   <div class="sbar"><span>9:44</span><span style="color:#1a6ef5;">●●●</span></div>
   <div class="screen-body" style="padding-top:8px;">
@@ -357,123 +400,296 @@ body{background:#f0f4f8;display:flex;justify-content:center;align-items:center;m
       <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#1a6ef5" stroke-width="2"/><path d="M9 16l5 5 9-9" stroke="#1a6ef5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div style="font-size:19px;font-weight:500;color:#0f2a5e;text-align:center;">Order placed</div>
-    <div style="font-size:12px;color:#6b7a99;text-align:center;margin-top:5px;">Ready for pickup shortly</div>
+    <div style="font-size:12px;color:#6b7a99;text-align:center;margin-top:5px;">Supplier will confirm shortly</div>
     <div class="receipt-card" id="receipt-content"></div>
     <button class="cta-btn" onclick="goTo('screen-home')">Done</button>
     <button class="track-btn" onclick="goTo('screen-orders')">View orders</button>
   </div>
 </div>
 
-
-<div class="screen" id="screen-order-detail">
-  <div class="sbar"><span>9:44</span><span style="color:#1a6ef5;">●●●</span></div>
-  <div class="nav-back" onclick="goTo('screen-orders')">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 13L5 8l5-5" stroke="#6b7a99" stroke-width="1.5" stroke-linecap="round"/></svg>
-    Orders
-  </div>
-  <div class="screen-body" style="padding-top:8px;">
-    <div class="confirm-icon">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#1a6ef5" stroke-width="2"/><path d="M9 16l5 5 9-9" stroke="#1a6ef5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <div style="font-size:19px;font-weight:500;color:#0f2a5e;text-align:center;">Order confirmed</div>
-    <div style="font-size:12px;color:#6b7a99;text-align:center;margin-top:5px;" id="detail-ready-label"></div>
-    <div class="receipt-card" id="order-detail-receipt"></div>
-    <button class="track-btn" onclick="goTo('screen-orders')">Back to orders</button>
-  </div>
-</div>
 </div>
 </div>
 
 <script>
-const suppliers=[
-  {name:'Ferguson Plumbing',addr:'123 River Rd, Fair Lawn',dist:'0.4 mi',time:'10 min',price:4.20,stock:47,fulfillment:'Pickup + delivery'},
-  {name:'Ramco Supply Co.',addr:'88 Market St, Hackensack',dist:'1.1 mi',time:'15 min',price:4.75,stock:22,fulfillment:'Pickup only'},
-  {name:'Metro Pipe & Valve',addr:'210 Industrial Ave, Paterson',dist:'2.3 mi',time:'20 min',price:5.10,stock:8,fulfillment:'Pickup + delivery'},
-  {name:'City Plumbing',addr:'44 Oak St, Garfield',dist:'3.1 mi',time:'25 min',price:4.90,stock:31,fulfillment:'Pickup + delivery'},
-  {name:'Pro Supply Co.',addr:'500 Commerce Blvd, Lodi',dist:'4.2 mi',time:'30 min',price:5.40,stock:60,fulfillment:'Pickup + delivery'},
-  {name:'NJ Pipe Works',addr:'77 Bergen Tpke, Ridgefield',dist:'3.8 mi',time:'28 min',price:5.25,stock:14,fulfillment:'Pickup only'},
-  {name:'Allied Supply',addr:'320 Route 17, Paramus',dist:'2.8 mi',time:'22 min',price:4.60,stock:38,fulfillment:'Pickup + delivery'},
-  {name:'Tri-State Pipe',addr:'15 Industrial Rd, Elmwood Park',dist:'1.8 mi',time:'18 min',price:5.80,stock:5,fulfillment:'Pickup only'}
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const SUPPLIERS = {
+  plumbing: [
+    {id:0,name:'Ferguson Plumbing',addr:'123 River Rd, Fair Lawn',dist:0.4,time:'10 min',basePrice:4.20,stock:47,fulfillment:'Pickup + delivery',trade:'plumbing',hasSystem:true},
+    {id:1,name:'Ramco Supply Co.',addr:'88 Market St, Hackensack',dist:1.1,time:'15 min',basePrice:4.75,stock:22,fulfillment:'Pickup only',trade:'plumbing',hasSystem:false},
+    {id:2,name:'Metro Pipe & Valve',addr:'210 Industrial Ave, Paterson',dist:2.3,time:'20 min',basePrice:5.10,stock:8,fulfillment:'Pickup + delivery',trade:'plumbing',hasSystem:false},
+    {id:3,name:'City Plumbing',addr:'44 Oak St, Garfield',dist:3.1,time:'25 min',basePrice:4.90,stock:31,fulfillment:'Pickup + delivery',trade:'plumbing',hasSystem:false},
+    {id:4,name:'NJ Pipe Works',addr:'77 Bergen Tpke, Ridgefield',dist:3.8,time:'28 min',basePrice:5.25,stock:14,fulfillment:'Pickup only',trade:'plumbing',hasSystem:false},
+    {id:5,name:'Tri-State Pipe',addr:'15 Industrial Rd, Elmwood Park',dist:1.8,time:'18 min',basePrice:5.80,stock:5,fulfillment:'Pickup only',trade:'plumbing',hasSystem:false},
+    {id:6,name:'Pro Supply Co.',addr:'500 Commerce Blvd, Lodi',dist:4.2,time:'30 min',basePrice:5.40,stock:60,fulfillment:'Pickup + delivery',trade:'plumbing',hasSystem:true},
+    {id:7,name:'Allied Supply',addr:'320 Route 17, Paramus',dist:2.8,time:'22 min',basePrice:4.60,stock:38,fulfillment:'Pickup + delivery',trade:'plumbing',hasSystem:false}
+  ],
+  electrical: [
+    {id:8,name:'Volt Electric Supply',addr:'55 Main Ave, Clifton',dist:0.6,time:'12 min',basePrice:1.80,stock:200,fulfillment:'Pickup + delivery',trade:'electrical',hasSystem:true},
+    {id:9,name:'Bergen Wire & Cable',addr:'112 Route 46, Teaneck',dist:1.4,time:'16 min',basePrice:1.95,stock:150,fulfillment:'Pickup only',trade:'electrical',hasSystem:false},
+    {id:10,name:'NJ Electrical Depot',addr:'88 Broad St, Newark',dist:2.1,time:'19 min',basePrice:1.75,stock:320,fulfillment:'Pickup + delivery',trade:'electrical',hasSystem:true},
+    {id:11,name:'Powerline Distributors',addr:'200 Industrial Pkwy, Passaic',dist:3.0,time:'24 min',basePrice:2.10,stock:80,fulfillment:'Pickup only',trade:'electrical',hasSystem:false},
+    {id:12,name:'Circuit Supply NJ',addr:'77 Commerce Dr, Hackensack',dist:1.9,time:'18 min',basePrice:1.85,stock:110,fulfillment:'Pickup + delivery',trade:'electrical',hasSystem:false}
+  ],
+  hvac: [
+    {id:13,name:'CoolAir Supply',addr:'34 Industrial Blvd, Lodi',dist:1.2,time:'14 min',basePrice:28.50,stock:15,fulfillment:'Pickup + delivery',trade:'hvac',hasSystem:true},
+    {id:14,name:'Thermal Parts NJ',addr:'90 Route 17, Paramus',dist:2.4,time:'21 min',basePrice:32.00,stock:8,fulfillment:'Pickup only',trade:'hvac',hasSystem:false},
+    {id:15,name:'HVAC Depot North Jersey',addr:'15 Commerce Ave, Garfield',dist:3.3,time:'26 min',basePrice:26.75,stock:22,fulfillment:'Pickup + delivery',trade:'hvac',hasSystem:false},
+    {id:16,name:'AirFlow Supplies',addr:'200 River Rd, Elmwood Park',dist:1.7,time:'17 min',basePrice:30.00,stock:11,fulfillment:'Pickup only',trade:'hvac',hasSystem:false}
+  ],
+  general: [
+    {id:17,name:'Pro Supply Co.',addr:'500 Commerce Blvd, Lodi',dist:4.2,time:'30 min',basePrice:3.50,stock:60,fulfillment:'Pickup + delivery',trade:'general',hasSystem:true},
+    {id:18,name:'Allied Supply',addr:'320 Route 17, Paramus',dist:2.8,time:'22 min',basePrice:3.20,stock:38,fulfillment:'Pickup + delivery',trade:'general',hasSystem:false},
+    {id:19,name:'BuildRight Materials',addr:'10 Industrial Dr, Clifton',dist:1.5,time:'15 min',basePrice:4.10,stock:90,fulfillment:'Pickup + delivery',trade:'general',hasSystem:false},
+    {id:20,name:'NJ Builder Supply',addr:'55 Route 46, Fairfield',dist:2.2,time:'20 min',basePrice:3.80,stock:45,fulfillment:'Pickup only',trade:'general',hasSystem:false}
+  ]
+};
+
+// Flatten all suppliers for lookup
+const ALL_SUPPLIERS = Object.values(SUPPLIERS).flat();
+
+const CATALOG = [
+  // Plumbing
+  {id:'copper-half',name:'1/2" copper pipe',desc:'10ft length',trade:'plumbing',unit:'ft',unitStep:10,minQty:10,price:4.20,supplierTrade:'plumbing',tags:['copper','pipe','plumbing','1/2']},
+  {id:'copper-three',name:'3/4" copper pipe',desc:'10ft length',trade:'plumbing',unit:'ft',unitStep:10,minQty:10,price:5.65,supplierTrade:'plumbing',tags:['copper','pipe','plumbing','3/4']},
+  {id:'pvc-3',name:'3" PVC pipe',desc:'10ft length, schedule 40',trade:'plumbing',unit:'ft',unitStep:10,minQty:10,price:3.80,supplierTrade:'plumbing',tags:['pvc','pipe','plumbing','3 inch']},
+  {id:'pvc-coupling',name:'4-3" PVC coupling',desc:'4" to 3" reducer coupling',trade:'plumbing',unit:'each',unitStep:1,minQty:1,price:8.50,supplierTrade:'plumbing',tags:['pvc','coupling','reducer','plumbing','fitting']},
+  {id:'ball-valve',name:'1/2" ball valve',desc:'Full port brass',trade:'plumbing',unit:'each',unitStep:1,minQty:1,price:12.00,supplierTrade:'plumbing',tags:['valve','ball valve','brass','plumbing']},
+  {id:'pex-half',name:'1/2" PEX tubing',desc:'100ft coil, red',trade:'plumbing',unit:'ft',unitStep:10,minQty:10,price:0.65,supplierTrade:'plumbing',tags:['pex','tubing','plumbing']},
+  // Electrical
+  {id:'wire-12',name:'12 AWG wire',desc:'THHN, per foot',trade:'electrical',unit:'ft',unitStep:25,minQty:25,price:0.38,supplierTrade:'electrical',tags:['wire','12 awg','thhn','electrical','12awg']},
+  {id:'wire-14',name:'14 AWG wire',desc:'THHN, per foot',trade:'electrical',unit:'ft',unitStep:25,minQty:25,price:0.28,supplierTrade:'electrical',tags:['wire','14 awg','thhn','electrical']},
+  {id:'romex-12',name:'12/2 Romex cable',desc:'NM-B, per foot',trade:'electrical',unit:'ft',unitStep:25,minQty:25,price:0.72,supplierTrade:'electrical',tags:['romex','cable','nm-b','electrical','12/2']},
+  {id:'breaker-20',name:'20A circuit breaker',desc:'Single pole, 120V',trade:'electrical',unit:'each',unitStep:1,minQty:1,price:14.50,supplierTrade:'electrical',tags:['breaker','circuit breaker','20 amp','electrical']},
+  {id:'outlet-box',name:'Electrical outlet box',desc:'Single gang, plastic',trade:'electrical',unit:'each',unitStep:5,minQty:5,price:1.20,supplierTrade:'electrical',tags:['box','outlet box','electrical','gang']},
+  {id:'conduit-half',name:'1/2" EMT conduit',desc:'10ft length',trade:'electrical',unit:'ft',unitStep:10,minQty:10,price:1.05,supplierTrade:'electrical',tags:['conduit','emt','electrical','1/2']},
+  // HVAC
+  {id:'filter-16',name:'16x25x1 air filter',desc:'MERV 8, pack of 6',trade:'hvac',unit:'pack',unitStep:1,minQty:1,price:28.50,supplierTrade:'hvac',tags:['filter','air filter','hvac','merv']},
+  {id:'flex-duct',name:'6" flexible duct',desc:'25ft insulated, R-6',trade:'hvac',unit:'ft',unitStep:5,minQty:5,price:2.40,supplierTrade:'hvac',tags:['duct','flexible duct','hvac','6 inch']},
+  {id:'thermostat',name:'Programmable thermostat',desc:'7-day, 2-stage heat/cool',trade:'hvac',unit:'each',unitStep:1,minQty:1,price:68.00,supplierTrade:'hvac',tags:['thermostat','hvac','programmable']},
+  {id:'refrigerant',name:'R-410A refrigerant',desc:'25lb cylinder',trade:'hvac',unit:'cylinder',unitStep:1,minQty:1,price:185.00,supplierTrade:'hvac',tags:['refrigerant','r410a','hvac','freon']},
+  // General
+  {id:'drywall-half',name:'1/2" drywall sheet',desc:'4x8 ft panel',trade:'general',unit:'sheet',unitStep:1,minQty:1,price:14.00,supplierTrade:'general',tags:['drywall','sheetrock','general','gypsum']},
+  {id:'lumber-2x4',name:'2x4 lumber',desc:'8ft, kiln dried',trade:'general',unit:'each',unitStep:1,minQty:1,price:5.80,supplierTrade:'general',tags:['lumber','2x4','wood','framing','general']},
+  {id:'concrete-bag',name:'80lb concrete mix',desc:'Ready-mix, fast setting',trade:'general',unit:'bag',unitStep:1,minQty:1,price:7.50,supplierTrade:'general',tags:['concrete','mix','cement','general']},
+  {id:'screws-box',name:'3" wood screws',desc:'Box of 100, coarse thread',trade:'general',unit:'box',unitStep:1,minQty:1,price:9.20,supplierTrade:'general',tags:['screws','fasteners','wood screws','general']}
 ];
 
-let currentSupplier=0,qty=20,method='pickup',cart=[],orders=[],prevScreen='screen-home',currentItem=null;
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentTrade = 'plumbing';
+let currentItem = null;
+let currentSupplierObj = null;
+let qty = 1;
+let method = 'pickup';
+let cart = [];
+let orders = [];
+let navStack = ['screen-home'];
+let currentResultsSuppliers = [];
 
-function viewOrderDetail(idx){
-  const o=orders[idx];
-  document.getElementById('detail-ready-label').textContent='Ready for '+o.method+' · '+o.time;
-  document.getElementById('order-detail-receipt').innerHTML=`<div style="font-size:10px;font-weight:500;color:#9baac8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Order details</div><div class="receipt-row"><span style="color:#6b7a99;">Order #</span><span style="font-weight:500;color:#0f2a5e;">${o.orderNum}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Supplier</span><span style="font-weight:500;color:#0f2a5e;">${o.supplier}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Item</span><span style="font-weight:500;color:#0f2a5e;">${o.item||'1/2" copper pipe'}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Qty</span><span style="font-weight:500;color:#0f2a5e;">${o.qty} ft</span></div><div class="receipt-row"><span style="color:#6b7a99;">Method</span><span style="font-weight:500;color:#0f2a5e;">${o.method==='pickup'?'Pickup':'Delivery'}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Total</span><span style="font-weight:500;color:#1a6ef5;">$${o.total}</span></div><div style="border-top:0.5px solid #c8d4e8;margin-top:8px;padding-top:8px;"><div class="receipt-row"><span style="color:#6b7a99;">Status</span><span style="font-weight:500;color:#1a6ef5;">Confirmed ✓</span></div><div class="receipt-row"><span style="color:#6b7a99;">Placed at</span><span style="font-weight:500;color:#0f2a5e;">${o.time}</span></div></div>`;
-  goTo('screen-order-detail');
+// ─── MAP PINS ────────────────────────────────────────────────────────────────
+const PIN_POSITIONS = {
+  plumbing: [
+    {id:0,x:200,y:220},{id:1,x:560,y:330},{id:2,x:490,y:150},
+    {id:3,x:130,y:540},{id:4,x:330,y:680},{id:5,x:90,y:320},
+    {id:6,x:650,y:600},{id:7,x:680,y:220}
+  ],
+  electrical: [
+    {id:8,x:220,y:180},{id:9,x:520,y:280},{id:10,x:380,y:420},
+    {id:11,x:150,y:480},{id:12,x:600,y:150}
+  ],
+  hvac: [
+    {id:13,x:300,y:250},{id:14,x:550,y:400},{id:15,x:180,y:380},{id:16,x:620,y:550}
+  ],
+  general: [
+    {id:17,x:650,y:600},{id:18,x:680,y:220},{id:19,x:250,y:300},{id:20,x:450,y:500}
+  ]
+};
+
+const TRADE_ICONS = {
+  plumbing: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 16l3-3m0 0l6-6m-6 6l1.5-1.5M13 7l1-1a2 2 0 012.8 2.8L15.7 10M7 13l-3 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  electrical: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M11 2L5 11h6l-2 7 6-9h-6l2-7z" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  hvac: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3C7 3 5 5 5 8c0 2 1 3.5 2.5 4.5V15h5v-2.5C14 11.5 15 10 15 8c0-3-2-5-5-5z" stroke="#fff" stroke-width="1.5"/><path d="M8 15h4v1.5a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V15z" stroke="#fff" stroke-width="1.5"/></svg>',
+  general: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="14" height="7" rx="1" stroke="#fff" stroke-width="1.6"/><path d="M7 10V7a3 3 0 016 0v3" stroke="#fff" stroke-width="1.6"/></svg>'
+};
+
+function renderMapPins(trade) {
+  const pins = PIN_POSITIONS[trade] || [];
+  const suppliersForTrade = SUPPLIERS[trade] || [];
+  const icon = TRADE_ICONS[trade];
+  document.getElementById('map-pins').innerHTML = pins.map(p => {
+    const s = suppliersForTrade.find(s => s.id === p.id);
+    if (!s) return '';
+    return `<div class="map-pin" style="left:${p.x}px;top:${p.y}px;" onclick="openSupplierFromMap(${s.id})">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:38px;height:38px;border-radius:50%;background:#1a6ef5;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(26,110,245,0.3);display:flex;align-items:center;justify-content:center;">${icon}</div>
+        <div style="background:rgba(255,255,255,0.96);border-radius:6px;padding:2px 6px;font-size:8px;font-weight:600;color:#0f2a5e;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.1);">${s.name.split(' ')[0]}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('map-chips').innerHTML = suppliersForTrade.map(s =>
+    `<div class="nearby-chip" onclick="openSupplierFromMap(${s.id})">
+      <div>
+        <div style="font-size:12px;font-weight:500;color:#0f2a5e;">${s.name}</div>
+        <div style="font-size:10px;color:#9baac8;margin-top:2px;">${s.fulfillment}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;margin-left:8px;">
+        <div style="font-size:11px;font-weight:500;color:#1a6ef5;">${s.dist} mi</div>
+        <div style="font-size:10px;color:#9baac8;">${s.time}</div>
+      </div>
+    </div>`
+  ).join('');
+  document.getElementById('map-overlay-label').textContent = `${suppliersForTrade.length} suppliers nearby · drag up to see all`;
 }
 
-function loadResults(product){
-  buildResultsList(product);
-  goTo('screen-results');
+function openSupplierFromMap(supplierId) {
+  const s = ALL_SUPPLIERS.find(x => x.id === supplierId);
+  if (!s) return;
+  currentItem = null;
+  renderSupplierProfile(s);
+  goTo('screen-supplier');
 }
 
-function buildResultsList(product){
-  const isThreeQuarter=product==='threequarter';
-  const list=isThreeQuarter?suppliers.slice(0,5):suppliers;
-  const itemLabel=isThreeQuarter?'3/4\" copper pipe (10ft)':'1/2\" copper pipe (10ft)';
-  document.getElementById('results-subtitle').textContent='Plumbing · '+itemLabel;
-  document.getElementById('results-title').textContent=list.length+' suppliers found';
-  const sorted=[...list].sort((a,b)=>{
-    const pa=isThreeQuarter?a.price*1.35:a.price;
-    const pb=isThreeQuarter?b.price*1.35:b.price;
-    return pa-pb;
-  });
-  const el=document.getElementById('results-list');
-  el.innerHTML=sorted.map((s,i)=>{
-    const price=isThreeQuarter?(s.price*1.35).toFixed(2):s.price.toFixed(2);
-    const stock=isThreeQuarter?Math.floor(s.stock*0.6):s.stock;
-    const origIdx=suppliers.indexOf(s);
-    return `
-    <div class="supplier-card" onclick="selectProduct(${origIdx},'${isThreeQuarter?'threequarter':'half'}','screen-results')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><div class="supplier-name">${s.name}</div><div class="supplier-dist">${s.dist} · Ready in ${s.time}</div></div>
-        <div style="text-align:right;"><div class="price-tag">$${price}</div><div class="price-unit">per ft</div></div>
+function selectTrade(trade, el) {
+  currentTrade = trade;
+  document.querySelectorAll('.trade-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const svg = el.querySelector('svg');
+  if (svg) svg.querySelectorAll('path,rect').forEach(p => p.setAttribute('stroke', '#1a6ef5'));
+  renderMapPins(trade);
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+function handleSearch(val) {
+  const v = val.toLowerCase().trim();
+  const recents = document.getElementById('search-recents');
+  const area = document.getElementById('search-results-area');
+  const none = document.getElementById('no-results');
+  const list = document.getElementById('search-results-list');
+
+  if (!v) {
+    recents.style.display = 'block';
+    area.style.display = 'none';
+    none.style.display = 'none';
+    return;
+  }
+  recents.style.display = 'none';
+
+  const matches = CATALOG.filter(item =>
+    item.tags.some(t => t.includes(v)) ||
+    item.name.toLowerCase().includes(v) ||
+    item.trade.includes(v)
+  );
+
+  if (matches.length === 0) {
+    area.style.display = 'none';
+    none.style.display = 'block';
+    return;
+  }
+
+  none.style.display = 'none';
+  area.style.display = 'block';
+  document.getElementById('search-results-label').textContent = `${matches.length} result${matches.length > 1 ? 's' : ''}`;
+
+  list.innerHTML = matches.map(item => {
+    const tradeColor = {plumbing:'#1a6ef5',electrical:'#f59e0b',hvac:'#10b981',general:'#6b7a99'}[item.trade];
+    return `<div class="search-result" onclick="doSearchItem('${item.id}')">
+      <div class="sr-left">
+        <div class="sr-icon" style="background:${tradeColor}15;">${TRADE_ICONS[item.trade].replace(/#fff/g, tradeColor)}</div>
+        <div>
+          <div style="font-size:13px;color:#0f2a5e;font-weight:500;">${item.name}</div>
+          <div style="font-size:11px;color:#9baac8;">${item.trade.charAt(0).toUpperCase()+item.trade.slice(1)} · $${item.price.toFixed(2)} per ${item.unit}</div>
+        </div>
       </div>
-      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
-        ${i===0?'<span class="badge badge-blue" style="font-weight:500;">Best price</span>':''}
-        <span class="badge badge-blue">In stock (${stock})</span>
-        <span class="badge badge-gray">${s.fulfillment}</span>
-      </div>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg>
     </div>`;
   }).join('');
 }
 
-function selectSupplier(i,from){
-  currentSupplier=i;qty=20;method='pickup';
-  prevScreen=from||document.querySelector('.screen.active').id;
-  document.getElementById('supplier-back-btn').onclick=()=>goTo(prevScreen);
-  renderSupplierProfile(i);
-  goTo('screen-supplier');
+function doSearchItem(itemId) {
+  const item = CATALOG.find(i => i.id === itemId);
+  if (!item) return;
+  currentItem = item;
+  const suppliersForTrade = SUPPLIERS[item.supplierTrade] || [];
+  currentResultsSuppliers = [...suppliersForTrade];
+  renderResults(currentResultsSuppliers, item, 'nearest');
+  goTo('screen-results');
 }
 
-function renderSupplierProfile(i){
-  const s=suppliers[i];
-  const products=[
-    {name:'1/2" copper pipe',size:'10ft',price:s.price,stock:s.stock,item:'half'},
-    {name:'3/4" copper pipe',size:'10ft',price:(s.price*1.35).toFixed(2),stock:Math.floor(s.stock*0.6),item:'threequarter'}
-  ];
-  document.getElementById('supplier-profile').innerHTML=`
+// ─── RESULTS & SORT ───────────────────────────────────────────────────────────
+function sortResults(mode, el) {
+  document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  let sorted = [...currentResultsSuppliers];
+  if (mode === 'nearest') sorted.sort((a,b) => a.dist - b.dist);
+  else if (mode === 'price') sorted.sort((a,b) => a.basePrice - b.basePrice);
+  else if (mode === 'stock') sorted.sort((a,b) => b.stock - a.stock);
+  else if (mode === 'fastest') sorted.sort((a,b) => parseInt(a.time) - parseInt(b.time));
+  renderResultCards(sorted, currentItem);
+}
+
+function renderResults(suppliers, item, sortMode) {
+  document.getElementById('results-subtitle').textContent = `${item.trade.charAt(0).toUpperCase()+item.trade.slice(1)} · ${item.name}`;
+  document.getElementById('results-title').textContent = `${suppliers.length} supplier${suppliers.length !== 1 ? 's' : ''} found`;
+  renderResultCards(suppliers, item);
+}
+
+function renderResultCards(suppliers, item) {
+  const el = document.getElementById('results-list');
+  const sorted = [...suppliers].sort((a,b) => a.basePrice - b.basePrice);
+  const cheapestPrice = sorted[0]?.basePrice;
+  el.innerHTML = suppliers.map((s, i) => {
+    const isBest = s.basePrice === cheapestPrice;
+    const localWarning = !s.hasSystem ? `<div style="display:flex;align-items:center;gap:5px;margin-top:8px;background:#fffbeb;border:0.5px solid #fcd34d;border-radius:8px;padding:5px 8px;">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d97706" stroke-width="1.4"/><path d="M8 5v4M8 11v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span style="font-size:10px;color:#92400e;">Stock manually updated · supplier confirms upon order</span>
+      </div>` : '';
+    return `<div class="supplier-card" onclick="openSupplierWithItem(${s.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="supplier-name">${s.name}</div><div class="supplier-dist">${s.dist} mi · Ready in ${s.time}</div></div>
+        <div style="text-align:right;"><div class="price-tag">$${s.basePrice.toFixed(2)}</div><div class="price-unit">per ${item.unit}</div></div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+        ${isBest ? '<span class="badge badge-blue" style="font-weight:500;">Best price</span>' : ''}
+        ${s.hasSystem ? `<span class="badge badge-blue">Live stock (${s.stock})</span>` : `<span class="badge badge-blue">In stock (${s.stock})</span>`}
+        <span class="badge badge-gray">${s.fulfillment}</span>
+      </div>
+      ${localWarning}
+    </div>`;
+  }).join('');
+}
+
+function openSupplierWithItem(supplierId) {
+  const s = ALL_SUPPLIERS.find(x => x.id === supplierId);
+  if (!s || !currentItem) return;
+  currentSupplierObj = s;
+  openOrderScreen(supplierId, currentItem.id);
+}
+
+// ─── SUPPLIER PROFILE ─────────────────────────────────────────────────────────
+function renderSupplierProfile(s) {
+  currentSupplierObj = s;
+
+  const tradeItems = CATALOG.filter(i => i.supplierTrade === s.trade);
+  document.getElementById('supplier-profile').innerHTML = `
     <div style="background:#fff;border:0.5px solid #dce6f5;border-radius:14px;padding:14px;margin-bottom:14px;">
       <div style="font-size:16px;font-weight:500;color:#0f2a5e;">${s.name}</div>
-      <div style="font-size:11px;color:#6b7a99;margin:4px 0 10px;">${s.addr} · ${s.dist}</div>
+      <div style="font-size:11px;color:#6b7a99;margin:4px 0 10px;">${s.addr} · ${s.dist} mi</div>
       <div class="sdr"><span style="color:#6b7a99;">Hours</span><span style="font-weight:500;color:#0f2a5e;">Mon–Sat 7am–6pm</span></div>
       <div class="sdr"><span style="color:#6b7a99;">Fulfillment</span><span style="font-weight:500;color:#0f2a5e;">${s.fulfillment}</span></div>
       <div class="sdr"><span style="color:#6b7a99;">Ready in</span><span style="font-weight:500;color:#1a6ef5;">${s.time}</span></div>
     </div>
     <div style="font-size:13px;font-weight:500;color:#0f2a5e;margin-bottom:10px;">Available products</div>
-    ${products.map(p=>`
-    <div class="supplier-card" onclick="selectProduct(${i},'${p.item}')">
+    ${tradeItems.map(item => `
+    <div class="supplier-card" onclick="openOrderScreen(${s.id},'${item.id}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div>
-          <div class="supplier-name">${p.name}</div>
-          <div class="supplier-dist">${p.size} · ${p.stock} in stock</div>
+          <div class="supplier-name">${item.name}</div>
+          <div class="supplier-dist">${item.desc} · ${s.stock} in stock</div>
         </div>
         <div style="text-align:right;">
-          <div class="price-tag">$${parseFloat(p.price).toFixed(2)}</div>
-          <div class="price-unit">per ft</div>
+          <div class="price-tag">$${s.basePrice.toFixed(2)}</div>
+          <div class="price-unit">per ${item.unit}</div>
         </div>
       </div>
       <div style="display:flex;gap:5px;margin-top:8px;">
@@ -483,103 +699,347 @@ function renderSupplierProfile(i){
     </div>`).join('')}`;
 }
 
-function selectProduct(supplierIdx, item){
-  currentSupplier=supplierIdx;qty=20;method='pickup';
-  const s=suppliers[supplierIdx];
-  const isHalf=item==='half';
-  const price=isHalf?s.price:parseFloat((s.price*1.35).toFixed(2));
-  const stock=isHalf?s.stock:Math.floor(s.stock*0.6);
-  const pipeName=isHalf?'1/2" copper pipe (10ft)':'3/4" copper pipe (10ft)';
-  currentItem={name:pipeName,price,stock};
-  document.getElementById('order-detail').innerHTML=`
-    <div style="font-size:14px;font-weight:500;color:#0f2a5e;">${s.name}</div>
-    <div style="font-size:11px;color:#6b7a99;margin:3px 0 10px;">${s.addr} · ${s.dist}</div>
-    <div class="sdr"><span style="color:#6b7a99;">Item</span><span style="font-weight:500;color:#0f2a5e;">${pipeName}</span></div>
-    <div class="sdr"><span style="color:#6b7a99;">Unit price</span><span style="font-weight:500;color:#1a6ef5;">$${price.toFixed(2)}/ft</span></div>
-    <div class="sdr"><span style="color:#6b7a99;">Stock</span><span style="font-weight:500;color:#1a6ef5;">${stock} units</span></div>
-    <div class="sdr"><span style="color:#6b7a99;">Ready in</span><span style="font-weight:500;color:#0f2a5e;">${s.time}</span></div>`;
-  document.getElementById('qty-display').textContent=qty;
+// ─── ORDER SCREEN ─────────────────────────────────────────────────────────────
+function openOrderScreen(supplierId, itemId) {
+  const s = ALL_SUPPLIERS.find(x => x.id === supplierId);
+  const item = CATALOG.find(i => i.id === itemId);
+  if (!s || !item) return;
+  currentSupplierObj = s;
+  currentItem = item;
+
+  qty = item.minQty;
+  method = 'pickup';
+
+  document.getElementById('qty-label').textContent = `Quantity (${item.unit})`;
+  document.getElementById('qty-unit-label').textContent = item.unit;
+  document.getElementById('qty-display').textContent = qty;
   document.getElementById('opt-pickup').classList.add('active');
   document.getElementById('opt-delivery').classList.remove('active');
+
+  const localStockWarning = !s.hasSystem ? `<div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;background:#fffbeb;border:0.5px solid #fcd34d;border-radius:10px;padding:8px 10px;">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="8" cy="8" r="7" stroke="#d97706" stroke-width="1.4"/><path d="M8 5v4M8 11v.5" stroke="#d97706" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <div>
+        <div style="font-size:11px;font-weight:500;color:#92400e;">Stock not verified in real time</div>
+        <div style="font-size:10px;color:#b45309;margin-top:2px;">This supplier updates stock manually. Availability will be confirmed by the supplier when your order is placed.</div>
+      </div>
+    </div>` : `<div style="display:flex;align-items:center;gap:6px;margin-top:10px;background:#f0fdf4;border:0.5px solid #86efac;border-radius:10px;padding:6px 10px;">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#16a34a" stroke-width="1.4"/><path d="M5 8l2 2 4-4" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span style="font-size:10px;color:#15803d;font-weight:500;">Live inventory — stock is updated in real time</span>
+    </div>`;
+  document.getElementById('order-detail').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:14px;font-weight:500;color:#1a6ef5;cursor:pointer;text-decoration:underline;text-decoration-color:#c8d4e8;" onclick="openSupplierFromOrder(${s.id})">${s.name}</div>
+        <div style="font-size:11px;color:#6b7a99;margin:2px 0 10px;">${s.addr} · ${s.dist} mi</div>
+      </div>
+      <div style="font-size:10px;color:#6b7a99;background:#f2f4f8;border-radius:6px;padding:3px 8px;cursor:pointer;" onclick="openSupplierFromOrder(${s.id})">View store →</div>
+    </div>
+    <div class="sdr"><span style="color:#6b7a99;">Item</span><span style="font-weight:500;color:#0f2a5e;">${item.name}</span></div>
+    <div class="sdr"><span style="color:#6b7a99;">Unit price</span><span style="font-weight:500;color:#1a6ef5;">$${s.basePrice.toFixed(2)} / ${item.unit}</span></div>
+    <div class="sdr"><span style="color:#6b7a99;">Stock</span><span style="font-weight:500;color:#1a6ef5;">${s.stock} units</span></div>
+    <div class="sdr"><span style="color:#6b7a99;">Ready in</span><span style="font-weight:500;color:#0f2a5e;">${s.time}</span></div>
+    ${localStockWarning}`;
   updateTotal();
   goTo('screen-order');
 }
 
-function updateTotal(){
-  const price=currentItem?currentItem.price:suppliers[currentSupplier].price;
-  const sub=qty*price,del=method==='delivery'?8:0,tot=sub+del;
-  document.getElementById('subtotal').textContent='$'+sub.toFixed(2);
-  document.getElementById('delivery-fee').textContent='$'+del.toFixed(2);
-  document.getElementById('total-price').textContent='$'+tot.toFixed(2);
+function openSupplierFromOrder(supplierId) {
+  const s = ALL_SUPPLIERS.find(x => x.id === supplierId);
+  if (!s) return;
+
+
+  renderSupplierProfile(s);
+  goTo('screen-supplier');
 }
 
-function changeQty(d){qty=Math.max(10,qty+d);document.getElementById('qty-display').textContent=qty;updateTotal();}
-function selectOpt(m){method=m;document.getElementById('opt-pickup').classList.toggle('active',m==='pickup');document.getElementById('opt-delivery').classList.toggle('active',m==='delivery');updateTotal();}
-
-function addToCart(){
-  const s=suppliers[currentSupplier];
-  const price=currentItem?currentItem.price:s.price;
-  const itemName=currentItem?currentItem.name:'1/2" copper pipe (10ft)';
-  const sub=qty*price,del=method==='delivery'?8:0;
-  cart.push({supplier:s.name,item:itemName,qty,price,method,total:(sub+del).toFixed(2)});
-  renderCart();goTo('screen-cart');
+function updateTotal() {
+  if (!currentSupplierObj || !currentItem) return;
+  const sub = qty * currentSupplierObj.basePrice;
+  const del = method === 'delivery' ? 8 : 0;
+  document.getElementById('subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('delivery-fee').textContent = '$' + del.toFixed(2);
+  document.getElementById('total-price').textContent = '$' + (sub + del).toFixed(2);
 }
 
-function renderCart(){
-  const el=document.getElementById('cart-content');
-  if(!cart.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h3l1.5 7h7l1.5-5H7" stroke="#1a6ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="17" r="1" fill="#1a6ef5"/><circle cx="15" cy="17" r="1" fill="#1a6ef5"/></svg></div><div class="empty-title">Your cart is empty</div><div class="empty-sub">Add items from a supplier<br/>to get started</div></div>`;return;}
-  const total=cart.reduce((a,c)=>a+parseFloat(c.total),0);
-  el.innerHTML=`<div class="screen-body" style="padding-top:12px;"><div class="section-title">Cart (${cart.length} item${cart.length>1?'s':''})</div>${cart.map(c=>`<div class="supplier-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="supplier-name">1/2" copper pipe · ${c.qty}ft</div><div class="supplier-dist">${c.supplier}</div></div><div style="text-align:right;"><div class="price-tag">$${c.total}</div><div class="price-unit">${c.method}</div></div></div></div>`).join('')}<div style="border-top:0.5px solid #dce6f5;padding-top:10px;margin-top:4px;"><div class="total-row" style="font-weight:500;font-size:15px;"><span>Total</span><span style="color:#1a6ef5;">$${total.toFixed(2)}</span></div></div><button class="cta-btn" onclick="checkoutCart()">Place all orders</button><button class="track-btn" onclick="cart=[];renderCart();">Clear cart</button></div>`;
+function changeQty(d) {
+  if (!currentItem) return;
+  qty = Math.max(currentItem.minQty, qty + (d * currentItem.unitStep));
+  document.getElementById('qty-display').textContent = qty;
+  updateTotal();
 }
 
-function checkoutCart(){
-  cart.forEach(c=>orders.push({...c,orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000),status:'Confirmed',time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}));
-  const last=orders[orders.length-1];cart=[];renderCart();renderOrders();showReceipt(last);goTo('screen-confirm');
+function selectOpt(m) {
+  method = m;
+  document.getElementById('opt-pickup').classList.toggle('active', m === 'pickup');
+  document.getElementById('opt-delivery').classList.toggle('active', m === 'delivery');
+  updateTotal();
 }
 
-function placeNow(){
-  const s=suppliers[currentSupplier];
-  const price=currentItem?currentItem.price:s.price;
-  const itemName=currentItem?currentItem.name:'1/2" copper pipe (10ft)';
-  const sub=qty*price,del=method==='delivery'?8:0;
-  const order={supplier:s.name,item:itemName,qty,price,method,total:(sub+del).toFixed(2),orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000),status:'Confirmed',time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-  orders.push(order);renderOrders();showReceipt(order);goTo('screen-confirm');
+function addToCart() {
+  const s = currentSupplierObj;
+  const item = currentItem;
+  const sub = qty * s.basePrice, del = method === 'delivery' ? 8 : 0;
+  cart.push({supplier:s.name, item:item.name, qty, unit:item.unit, price:s.basePrice, method, total:(sub+del).toFixed(2)});
+  renderCart();
+
+  // Show a brief confirmation toast then go back to where user came from
+  showToast('Added to cart');
+  goBack();
 }
 
-function showReceipt(o){
-  document.getElementById('receipt-content').innerHTML=`<div style="font-size:10px;font-weight:500;color:#9baac8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Receipt</div><div class="receipt-row"><span style="color:#6b7a99;">Supplier</span><span style="font-weight:500;color:#0f2a5e;">${o.supplier}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Item</span><span style="font-weight:500;color:#0f2a5e;">${o.item||'1/2&quot; copper pipe'}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Qty</span><span style="font-weight:500;color:#0f2a5e;">${o.qty} ft</span></div><div class="receipt-row"><span style="color:#6b7a99;">Method</span><span style="font-weight:500;color:#0f2a5e;">${o.method==='pickup'?'Pickup':'Delivery'}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Total</span><span style="font-weight:500;color:#1a6ef5;">$${o.total}</span></div><div class="receipt-row"><span style="color:#6b7a99;">Order #</span><span style="font-weight:500;color:#0f2a5e;">${o.orderNum}</span></div><div style="border-top:0.5px solid #c8d4e8;margin-top:8px;padding-top:8px;"><div class="receipt-row"><span style="color:#6b7a99;">Status</span><span style="font-weight:500;color:#1a6ef5;">Confirmed ✓</span></div><div class="receipt-row"><span style="color:#6b7a99;">Est. ready</span><span style="font-weight:500;color:#0f2a5e;">${o.time}</span></div></div>`;
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0f2a5e;color:#fff;font-size:12px;font-weight:500;padding:8px 18px;border-radius:20px;z-index:999;opacity:0;transition:opacity 0.2s;white-space:nowrap;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 1800);
 }
 
-function renderOrders(){
-  const el=document.getElementById('orders-content');
-  if(!orders.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v10a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" stroke="#1a6ef5" stroke-width="1.5"/><path d="M8 4V2h4v2" stroke="#1a6ef5" stroke-width="1.5"/></svg></div><div class="empty-title">No orders yet</div><div class="empty-sub">Your placed orders will<br/>appear here</div></div>`;return;}
-  el.innerHTML=`<div class="screen-body" style="padding-top:12px;"><div class="section-title">Orders (${orders.length})</div>${orders.map((o,idx)=>`<div class="supplier-card" onclick="viewOrderDetail(${idx})" style="cursor:pointer;"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div class="supplier-name">${o.orderNum}</div><div class="supplier-dist">${o.supplier}</div></div><div style="text-align:right;"><div class="price-tag" style="font-size:14px;">$${o.total}</div><div class="price-unit">${o.time}</div></div></div><div style="display:flex;gap:5px;margin-top:8px;"><span class="badge badge-blue">Confirmed ✓</span><span class="badge badge-gray">${o.qty}ft · ${o.method}</span></div><div style="font-size:10px;color:#9baac8;margin-top:6px;">Tap to view details →</div></div>`).join('')}</div>`;
+function renderCart() {
+  const el = document.getElementById('cart-content');
+  if (!cart.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h3l1.5 7h7l1.5-5H7" stroke="#1a6ef5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="17" r="1" fill="#1a6ef5"/><circle cx="15" cy="17" r="1" fill="#1a6ef5"/></svg></div><div class="empty-title">Your cart is empty</div><div class="empty-sub">Add items from a supplier to get started</div></div>`;
+    return;
+  }
+
+  // Group items by supplier
+  const grouped = {};
+  cart.forEach((c, i) => {
+    if (!grouped[c.supplier]) grouped[c.supplier] = [];
+    grouped[c.supplier].push({...c, cartIdx: i});
+  });
+
+  const grandTotal = cart.reduce((a, c) => a + parseFloat(c.total), 0);
+  const supplierCount = Object.keys(grouped).length;
+
+  const supplierBlocks = Object.entries(grouped).map(([supplierName, items]) => {
+    const supplierTotal = items.reduce((a, c) => a + parseFloat(c.total), 0);
+    const supplierIndices = items.map(c => c.cartIdx);
+
+    const itemRows = items.map((c, localIdx) => {
+      const isLast = localIdx === items.length - 1;
+      return `<div style="padding:10px 12px;${!isLast ? 'border-bottom:0.5px solid #eef2fb;' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;color:#0f2a5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.item}</div>
+            <div style="font-size:11px;color:#6b7a99;margin-top:2px;">${c.qty} ${c.unit} · ${c.method === 'pickup' ? 'Pickup' : 'Delivery'}</div>
+          </div>
+          <div style="text-align:right;margin-left:10px;flex-shrink:0;">
+            <div style="font-size:14px;font-weight:500;color:#0f2a5e;">$${c.total}</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <button onclick="orderSingleItem(${c.cartIdx})" style="font-size:11px;font-weight:500;color:#1a6ef5;background:#eef3ff;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;">Order this →</button>
+          <span onclick="removeFromCart(${c.cartIdx})" style="font-size:11px;color:#e53935;cursor:pointer;">Remove</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:#fff;border:0.5px solid #dce6f5;border-radius:14px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:#f8faff;padding:10px 12px;border-bottom:0.5px solid #dce6f5;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:#0f2a5e;">${supplierName}</div>
+          <div style="font-size:10px;color:#6b7a99;">${items.length} item${items.length > 1 ? 's' : ''}</div>
+        </div>
+        <button onclick="orderSupplierItems(${JSON.stringify(supplierIndices).replace(/"/g,'&quot;')})" style="font-size:11px;font-weight:500;color:#fff;background:#1a6ef5;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;">Order store →</button>
+      </div>
+      ${itemRows}
+      <div style="padding:8px 12px 10px;background:#f8faff;border-top:0.5px solid #dce6f5;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:#6b7a99;">Store total</div>
+        <div style="font-size:16px;font-weight:500;color:#1a6ef5;">$${supplierTotal.toFixed(2)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div style="padding:12px 16px 20px;">
+    <div class="section-title">Cart (${cart.length} item${cart.length > 1 ? 's' : ''} · ${supplierCount} store${supplierCount > 1 ? 's' : ''})</div>
+    ${supplierBlocks}
+    <div style="border-top:0.5px solid #dce6f5;padding-top:12px;margin-top:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div><div style="font-size:11px;color:#6b7a99;">Grand total</div><div style="font-size:18px;font-weight:500;color:#0f2a5e;">$${grandTotal.toFixed(2)}</div></div>
+      </div>
+      <button class="cta-btn" onclick="checkoutCart()">Place all orders</button>
+      <button class="track-btn" style="margin-top:8px;" onclick="cart=[];renderCart();">Clear cart</button>
+    </div>
+  </div>`;
 }
 
-function handleSearch(val){
-  const v=val.toLowerCase().trim();
-  const results=document.getElementById('search-results-area');
-  const none=document.getElementById('no-results');
-  if(!v){results.innerHTML='';none.style.display='none';return;}
-  const match=v.includes('copper')||v.includes('pipe')||v.includes('1/2')||v.includes('plumb');
-  if(match){none.style.display='none';results.innerHTML=`<div style="font-size:11px;color:#9baac8;margin:12px 0 8px;">Results</div><div class="search-result" onclick="loadResults('half')"><div class="sr-left"><div class="sr-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#1a6ef5" stroke-width="1.4"/><path d="M4 10h12" stroke="#1a6ef5" stroke-width="1.4"/></svg></div><div><div style="font-size:13px;color:#0f2a5e;font-weight:500;">1/2" copper pipe (10ft)</div><div style="font-size:11px;color:#9baac8;">Plumbing · 8 suppliers</div></div></div><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="search-result" onclick="loadResults('threequarter')"><div class="sr-left"><div class="sr-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#1a6ef5" stroke-width="1.4"/><path d="M4 10h12" stroke="#1a6ef5" stroke-width="1.4"/></svg></div><div><div style="font-size:13px;color:#0f2a5e;font-weight:500;">3/4" copper pipe (10ft)</div><div style="font-size:11px;color:#9baac8;">Plumbing · 5 suppliers</div></div></div><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#c8d4e8" stroke-width="1.5" stroke-linecap="round"/></svg></div>`;}
-  else{results.innerHTML='';none.style.display='block';}
+function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
+
+function orderSingleItem(cartIdx) {
+  const item = cart[cartIdx];
+  const order = {...item, orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  orders.push(order);
+  cart.splice(cartIdx, 1);
+  renderCart();
+  renderOrders();
+  showReceipt([order]);
+  goTo('screen-confirm');
 }
 
-function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function orderSupplierItems(indicesJson) {
+  const indices = typeof indicesJson === 'string' ? JSON.parse(indicesJson.replace(/&quot;/g,'"')) : indicesJson;
+  const placed = indices.map(i => ({...cart[i], orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}));
+  placed.forEach(o => orders.push(o));
+  // Remove from cart in reverse order so indices stay valid
+  [...indices].sort((a,b) => b-a).forEach(i => cart.splice(i,1));
+  renderCart();
+  renderOrders();
+  showReceipt(placed);
+  goTo('screen-confirm');
+}
 
-const mapArea=document.getElementById('map-area');
-const mapVp=document.getElementById('map-vp');
-let isDragging=false,startX=0,startY=0,vpX=-148,vpY=-160;
-mapVp.style.transform=`translate(${vpX}px,${vpY}px)`;
-mapArea.addEventListener('mousedown',e=>{if(e.target.closest('.map-overlay')||e.target.closest('.map-pin'))return;isDragging=true;startX=e.clientX-vpX;startY=e.clientY-vpY;});
-mapArea.addEventListener('touchstart',e=>{if(e.target.closest('.map-overlay')||e.target.closest('.map-pin'))return;isDragging=true;startX=e.touches[0].clientX-vpX;startY=e.touches[0].clientY-vpY;},{passive:true});
-document.addEventListener('mousemove',e=>{if(!isDragging)return;vpX=Math.min(0,Math.max(-500,e.clientX-startX));vpY=Math.min(0,Math.max(-420,e.clientY-startY));mapVp.style.transform=`translate(${vpX}px,${vpY}px)`;});
-document.addEventListener('touchmove',e=>{if(!isDragging)return;vpX=Math.min(0,Math.max(-500,e.touches[0].clientX-startX));vpY=Math.min(0,Math.max(-420,e.touches[0].clientY-startY));mapVp.style.transform=`translate(${vpX}px,${vpY}px)`;},{passive:true});
-document.addEventListener('mouseup',()=>isDragging=false);
-document.addEventListener('touchend',()=>isDragging=false);
+function placeNow() {
+  const s = currentSupplierObj;
+  const item = currentItem;
+  const sub = qty * s.basePrice, del = method === 'delivery' ? 8 : 0;
+  const order = {supplier:s.name, item:item.name, qty, unit:item.unit, price:s.basePrice, method, total:(sub+del).toFixed(2), orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  orders.push(order);
+  renderOrders();
+  showReceipt(order);
+  goTo('screen-confirm');
+}
 
-buildResultsList('half');
+function checkoutCart() {
+  const placedOrders = cart.map(c => ({...c, orderNum:'#SK-0'+Math.floor(Math.random()*9000+1000), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}));
+  placedOrders.forEach(o => orders.push(o));
+  cart = [];
+  renderCart();
+  renderOrders();
+  showReceipt(placedOrders);
+  goTo('screen-confirm');
+}
+
+function showReceipt(orderOrOrders) {
+  const list = Array.isArray(orderOrOrders) ? orderOrOrders : [orderOrOrders];
+  const grandTotal = list.reduce((a,c) => a + parseFloat(c.total), 0);
+
+  // Group by supplier
+  const bySupplier = {};
+  list.forEach(o => {
+    if (!bySupplier[o.supplier]) bySupplier[o.supplier] = [];
+    bySupplier[o.supplier].push(o);
+  });
+
+  const supplierBlocks = Object.entries(bySupplier).map(([supplierName, items]) => {
+    const supplierTotal = items.reduce((a,c) => a + parseFloat(c.total), 0);
+    const itemRows = items.map(o => `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:0.5px solid #dde6f8;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:500;color:#0f2a5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.item}</div>
+          <div style="font-size:10px;color:#9baac8;margin-top:2px;">${o.qty} ${o.unit} · ${o.method === 'pickup' ? 'Pickup' : 'Delivery'}</div>
+          <div style="font-size:10px;color:#b0bcd4;">${o.orderNum}</div>
+        </div>
+        <div style="font-size:12px;color:#6b7a99;white-space:nowrap;margin-left:10px;">$${o.total}</div>
+      </div>`).join('');
+    return `
+      <div style="background:#fff;border:0.5px solid #dce6f5;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(26,110,245,0.05);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:500;color:#0f2a5e;">${supplierName}</div>
+          <div style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:3px 8px;font-weight:500;">Confirmed ✓</div>
+        </div>
+        ${itemRows}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;margin-top:2px;">
+          <div>
+            <div style="font-size:10px;color:#9baac8;">Ready at ${items[0].time}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:#9baac8;margin-bottom:1px;">Order total</div>
+            <div style="font-size:17px;font-weight:500;color:#1a6ef5;">$${supplierTotal.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const grandRow = list.length > 1 ? `
+    <div style="background:#f0f5ff;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:11px;color:#6b7a99;">All orders</div>
+        <div style="font-size:13px;font-weight:500;color:#0f2a5e;">${list.length} suppliers</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:#6b7a99;margin-bottom:1px;">Grand total</div>
+        <div style="font-size:20px;font-weight:500;color:#1a6ef5;">$${grandTotal.toFixed(2)}</div>
+      </div>
+    </div>` : '';
+
+  document.getElementById('receipt-content').innerHTML = supplierBlocks + grandRow;
+}
+
+function renderOrders() {
+  const el = document.getElementById('orders-content');
+  if (!orders.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M4 4h12v10a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" stroke="#1a6ef5" stroke-width="1.5"/><path d="M8 4V2h4v2" stroke="#1a6ef5" stroke-width="1.5"/></svg></div><div class="empty-title">No orders yet</div><div class="empty-sub">Your placed orders will appear here</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="padding:12px 16px 20px;">
+    <div class="section-title">Orders (${orders.length})</div>
+    ${orders.map(o => `<div class="supplier-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="supplier-name">${o.orderNum}</div><div class="supplier-dist">${o.supplier}</div></div>
+        <div style="text-align:right;"><div class="price-tag" style="font-size:14px;">$${o.total}</div><div class="price-unit">${o.time}</div></div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+        <span class="badge badge-blue">Confirmed ✓</span>
+        <span class="badge badge-gray">${o.qty} ${o.unit} · ${o.method}</span>
+      </div>
+      <div style="font-size:11px;color:#6b7a99;margin-top:4px;">${o.item}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+function goTo(id, addToStack=true) {
+  const target = document.getElementById(id);
+  if (!target) { goTo('screen-home', false); return; }
+  if (addToStack) {
+    const current = document.querySelector('.screen.active');
+    if (current && current.id !== id) navStack.push(current.id);
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  target.classList.add('active');
+}
+
+function goBack() {
+  if (navStack.length > 0) {
+    const prev = navStack.pop();
+    goTo(prev, false);
+  } else {
+    goTo('screen-home', false);
+  }
+}
+
+// ─── OVERLAY TOGGLE ───────────────────────────────────────────────────────────
+let overlayExpanded = false;
+function toggleOverlay() {
+  overlayExpanded = !overlayExpanded;
+  const chips = document.getElementById('map-chips');
+  const btn = document.getElementById('overlay-toggle-btn');
+  chips.style.display = overlayExpanded ? 'flex' : 'none';
+  btn.textContent = overlayExpanded ? 'Hide ↓' : 'Show all ↑';
+}
+
+const mapArea = document.getElementById('map-area');
+const mapVp = document.getElementById('map-vp');
+let isDragging = false, startX = 0, startY = 0, vpX = -148, vpY = -160;
+mapVp.style.transform = `translate(${vpX}px,${vpY}px)`;
+mapArea.addEventListener('mousedown', e => { if (e.target.closest('.map-overlay') || e.target.closest('.map-pin')) return; isDragging = true; startX = e.clientX - vpX; startY = e.clientY - vpY; });
+mapArea.addEventListener('touchstart', e => { if (e.target.closest('.map-overlay') || e.target.closest('.map-pin')) return; isDragging = true; startX = e.touches[0].clientX - vpX; startY = e.touches[0].clientY - vpY; }, {passive:true});
+document.addEventListener('mousemove', e => { if (!isDragging) return; vpX = Math.min(0, Math.max(-500, e.clientX - startX)); vpY = Math.min(0, Math.max(-420, e.clientY - startY)); mapVp.style.transform = `translate(${vpX}px,${vpY}px)`; });
+document.addEventListener('touchmove', e => { if (!isDragging) return; vpX = Math.min(0, Math.max(-500, e.touches[0].clientX - startX)); vpY = Math.min(0, Math.max(-420, e.touches[0].clientY - startY)); mapVp.style.transform = `translate(${vpX}px,${vpY}px)`; }, {passive:true});
+document.addEventListener('mouseup', () => isDragging = false);
+document.addEventListener('touchend', () => isDragging = false);
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderMapPins('plumbing');
+renderCart();
+renderOrders();
 </script>
 </body>
 </html>
